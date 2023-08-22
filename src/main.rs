@@ -1,75 +1,23 @@
-use actix_web::{get, web, App, HttpRequest, HttpResponse, HttpServer, Responder, Result};
-use serde::{Deserialize, Serialize};
-use serde_json::Value;
+use actix_files::Files;
+use actix_web::{get, middleware::Logger, App, HttpServer};
 
-#[get("/healthz")]
-async fn healthz() -> impl Responder {
-    HttpResponse::Ok()
-}
-
-#[get("/.well-known/terraform.json")]
-async fn service_discovery() -> Result<impl Responder> {
-    let services = r#"
-        {
-            "modules.v1": "/terraform/modules/v1"
-        }
-    "#;
-    let response: Value = serde_json::from_str(services)?;
-    Ok(web::Json(response))
-}
-
-#[derive(Deserialize, Serialize, Debug)]
-struct ModuleAddress {
-    namespace: String,
-    name: String,
-    system: String,
-}
-
-#[get("/{namespace}/{name}/{system}")]
-async fn module(
-    _req: HttpRequest,
-    module_address: web::Path<ModuleAddress>,
-) -> Result<impl Responder> {
-    let path: ModuleAddress = module_address.into_inner();
-    Ok(web::Json(path))
-}
-
-#[get("/{namespace}/{name}/{system}/versions")]
-async fn module_versions(
-    _req: HttpRequest,
-    module_address: web::Path<ModuleAddress>,
-) -> Result<impl Responder> {
-    let path: ModuleAddress = module_address.into_inner();
-    Ok(web::Json(path))
-}
-
-#[derive(Deserialize, Serialize, Debug)]
-struct ModuleAddressWithVersion {
-    namespace: String,
-    name: String,
-    system: String,
-    version: String,
-}
-
-#[get("/{namespace}/{name}/{system}/{version}/download")]
-async fn download_module_version(
-    _req: HttpRequest,
-    module_address: web::Path<ModuleAddressWithVersion>,
-) -> Result<impl Responder> {
-    let path: ModuleAddressWithVersion = module_address.into_inner();
-    Ok(web::Json(path))
-}
+use terraform_registry_server::handlers::{
+    download_module_version, healthz, module, module_versions, service_discovery,
+};
 
 #[actix_web::main]
 async fn main() -> Result<(), std::io::Error> {
+    env_logger::init_from_env(env_logger::Env::new().default_filter_or("info"));
+    log::info!("starting HTTP server at http://localhost:8000");
+
     HttpServer::new(|| {
         App::new()
-            .wrap(actix_web::middleware::NormalizePath::default())
             .service(healthz)
             .service(service_discovery)
             .service(module)
             .service(module_versions)
             .service(download_module_version)
+            .wrap(Logger::default())
     })
     .bind("127.0.0.1:8000")?
     .run()
