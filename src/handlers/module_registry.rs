@@ -1,6 +1,4 @@
-use actix_web::{
-    get, http::header::ContentType, web, HttpRequest, HttpResponse, Responder, Result,
-};
+use actix_web::{get, http::header::ContentType, web, HttpRequest, HttpResponse};
 use serde::{Deserialize, Serialize};
 use std::path::Path;
 
@@ -136,7 +134,12 @@ pub async fn download_module_version(
     response
 }
 
-#[get("/download/{namespace}/{name}/{system}/{version}")]
-pub async fn download(_req: HttpRequest, state: web::Data<AppState>) -> HttpResponse {
+#[get("/{namespace}/{name}/{system}/download")]
+pub async fn download_latest_module_version(
+    _req: HttpRequest,
+    state: web::Data<AppState>,
+    module_address: web::Path<ModuleAddressRequest>,
+) -> HttpResponse {
+    // should return a 302 to the download URL of the latest version available
     todo!()
 }

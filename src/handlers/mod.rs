@@ -1,3 +1,4 @@
+pub mod download;
 mod healthz;
 mod module_registry;
 mod service_discovery;
