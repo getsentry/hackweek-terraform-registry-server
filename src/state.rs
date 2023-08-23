@@ -1,5 +1,5 @@
-use std::path::PathBuf;
+use crate::configuration::Settings;
 
 pub struct AppState {
-    pub root_module_dir: PathBuf,
+    pub settings: Settings,
 }

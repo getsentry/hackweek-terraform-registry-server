@@ -4,6 +4,9 @@ use std::path::PathBuf;
 #[derive(Deserialize, Clone)]
 pub struct Settings {
     pub root_module_dir: PathBuf,
+    pub host: String,
+    pub port: u16,
+    pub base_url: String
 }
 
 pub fn get_configuration() -> Result<Settings, config::ConfigError> {

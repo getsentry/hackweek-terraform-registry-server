@@ -13,10 +13,14 @@ async fn main() -> Result<(), std::io::Error> {
 
     let settings = configuration::get_configuration().unwrap();
     let state = web::Data::new(AppState {
-        root_module_dir: settings.root_module_dir,
+        settings: settings.clone(),
     });
 
-    log::info!("starting HTTP server at http://localhost:8000");
+    log::info!(
+        "starting HTTP server at {}:{}",
+        settings.host,
+        settings.port
+    );
 
     HttpServer::new(move || {
         App::new()
@@ -28,7 +32,7 @@ async fn main() -> Result<(), std::io::Error> {
             .service(download_module_version)
             .wrap(Logger::default())
     })
-    .bind("127.0.0.1:8000")?
+    .bind((settings.host, settings.port))?
     .run()
     .await
 }
