@@ -13,16 +13,6 @@ pub struct ModuleAddressRequest {
     system: String,
 }
 
-#[get("/{namespace}/{name}/{system}")]
-pub async fn module(
-    _req: HttpRequest,
-    module_address: web::Path<ModuleAddressRequest>,
-) -> Result<impl Responder> {
-    let path: ModuleAddressRequest = module_address.into_inner();
-
-    Ok(web::Json(path))
-}
-
 #[derive(Deserialize, Serialize, Debug)]
 pub struct ModuleVersionListResponse {
     modules: Vec<Module>,
