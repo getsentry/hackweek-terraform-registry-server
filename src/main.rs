@@ -1,40 +1,38 @@
-use actix_web::{middleware::Logger, web, App, HttpServer};
-
+use poem::{get, listener::TcpListener, middleware::AddData, EndpointExt, Route, Server};
 use terraform_registry_server::handlers::{
     download_module_version, healthz, module_versions, service_discovery,
 };
 
 use terraform_registry_server::configuration;
-use terraform_registry_server::state::AppState;
 
-#[actix_web::main]
+fn module_routes() -> Route {
+    Route::new()
+        .at("/:namespace/:name/:system/versions", get(module_versions))
+        .at(
+            "/:namespace/:name/:system/:version/download",
+            get(download_module_version),
+        )
+}
+
+#[tokio::main]
 async fn main() -> Result<(), std::io::Error> {
     env_logger::init_from_env(env_logger::Env::new().default_filter_or("info"));
 
     let settings = configuration::get_configuration().unwrap();
-    let state = web::Data::new(AppState {
-        settings: settings.clone(),
-    });
 
     log::info!(
         "starting HTTP server at {}:{}",
-        settings.host,
-        settings.port
+        &settings.host,
+        &settings.port
     );
 
-    HttpServer::new(move || {
-        App::new()
-            .app_data(state.clone())
-            .service(healthz)
-            .service(service_discovery)
-            .service(
-                web::scope("/v1/modules")
-                    .service(module_versions)
-                    .service(download_module_version),
-            )
-            .wrap(Logger::default())
-    })
-    .bind((settings.host, settings.port))?
-    .run()
-    .await
+    let app = Route::new()
+        .at("/healthz", get(healthz))
+        .at("/.well-known/terraform.json", get(service_discovery))
+        .nest("/v1/modules", module_routes())
+        .with(AddData::new(settings.clone()));
+
+    Server::new(TcpListener::bind((settings.host, settings.port)))
+        .run(app)
+        .await
 }

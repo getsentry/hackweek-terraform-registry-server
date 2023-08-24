@@ -1,13 +1,16 @@
-use actix_web::{get, web, HttpRequest, HttpResponse};
+use poem::{handler, web, IntoResponse};
 
-use crate::handlers::ModuleAddressWithVersionRequest;
-use crate::state::AppState;
+use crate::{configuration::Settings, handlers::ModuleAddressWithVersionRequest};
 
-#[get("/{namespace}/{name}/{system}/{version}")]
+#[handler]
 pub async fn download(
-    _req: HttpRequest,
-    state: web::Data<AppState>,
-    module: web::Path<ModuleAddressWithVersionRequest>,
-) -> HttpResponse {
+    settings: web::Data<&Settings>,
+    web::Path(ModuleAddressWithVersionRequest {
+        namespace,
+        name,
+        system,
+        version,
+    }): web::Path<ModuleAddressWithVersionRequest>,
+) -> impl IntoResponse {
     todo!()
 }

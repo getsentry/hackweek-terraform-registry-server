@@ -1,6 +1,6 @@
-use actix_web::{get, HttpResponse, Responder};
+use poem::{handler, http::StatusCode, IntoResponse, Response};
 
-#[get("/healthz")]
-pub async fn healthz() -> impl Responder {
-    HttpResponse::Ok()
+#[handler]
+pub async fn healthz() -> impl IntoResponse {
+    Response::builder().status(StatusCode::OK).finish()
 }

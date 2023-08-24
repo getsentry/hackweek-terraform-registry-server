@@ -1,8 +1,14 @@
-use actix_web::{get, http::header::ContentType, web, HttpRequest, HttpResponse};
+use poem::{
+    handler,
+    http::StatusCode,
+    web::{self, headers::ContentType},
+    IntoResponse, Response, Result,
+};
 use serde::{Deserialize, Serialize};
+
 use std::path::Path;
 
-use crate::state::AppState;
+use crate::configuration::Settings;
 
 #[derive(Deserialize, Serialize, Debug)]
 pub struct ModuleAddressRequest {
@@ -50,22 +56,23 @@ struct Version {
 ///
 /// - Panics if the directory where modules are stored is not readable.
 /// - Panics if there are no versions available for the specific module path.
-#[get("/{namespace}/{name}/{system}/versions")]
+#[handler]
 pub async fn module_versions(
-    _req: HttpRequest,
-    state: web::Data<AppState>,
-    module_address: web::Path<ModuleAddressRequest>,
-) -> HttpResponse {
-    let module_address: ModuleAddressRequest = module_address.into_inner();
-
-    let path = Path::new(&state.settings.root_module_dir)
-        .join(&module_address.namespace)
-        .join(&module_address.name)
-        .join(&module_address.system);
+    settings: web::Data<&Settings>,
+    web::Path(ModuleAddressRequest {
+        namespace,
+        name,
+        system,
+    }): web::Path<ModuleAddressRequest>,
+) -> impl IntoResponse {
+    let path = Path::new(&settings.root_module_dir)
+        .join(&namespace)
+        .join(&name)
+        .join(&system);
 
     // check if directory exists
     if !path.exists() {
-        return HttpResponse::NotFound().finish();
+        return Response::builder().status(StatusCode::NOT_FOUND).finish();
     }
 
     // {root_module_dir}/{namespace}/{name}/{system}/1.0.0
@@ -85,61 +92,59 @@ pub async fn module_versions(
         modules: module_versions,
     };
 
-    HttpResponse::Ok()
-        .content_type(ContentType::json())
-        .json(module_version_listing)
+    web::Json(module_version_listing).into_response()
 }
 
 #[derive(Deserialize, Serialize, Debug)]
 pub struct ModuleAddressWithVersionRequest {
-    namespace: String,
-    name: String,
-    system: String,
-    version: String,
+    pub namespace: String,
+    pub name: String,
+    pub system: String,
+    pub version: String,
 }
 
 /// Returns the download link for the requested module's source
 /// in the `X-Terraform-Get` header.
-#[get("/{namespace}/{name}/{system}/{version}/download")]
+#[handler]
 pub async fn download_module_version(
-    _req: HttpRequest,
-    state: web::Data<AppState>,
-    module_address: web::Path<ModuleAddressWithVersionRequest>,
-) -> HttpResponse {
-    let module_address_with_version: ModuleAddressWithVersionRequest = module_address.into_inner();
-
-    let path = Path::new(&state.settings.root_module_dir)
-        .join(&module_address_with_version.namespace)
-        .join(&module_address_with_version.name)
-        .join(&module_address_with_version.system)
-        .join(&module_address_with_version.version);
+    settings: web::Data<&Settings>,
+    web::Path(ModuleAddressWithVersionRequest {
+        namespace,
+        name,
+        system,
+        version,
+    }): web::Path<ModuleAddressWithVersionRequest>,
+) -> impl IntoResponse {
+    let path = Path::new(&settings.root_module_dir)
+        .join(&namespace)
+        .join(&name)
+        .join(&system)
+        .join(&version);
 
     if !path.exists() {
-        return HttpResponse::NotFound().finish();
+        return Response::builder().status(StatusCode::NOT_FOUND).finish();
     }
 
     let download_link = format!(
         "{}/download/{}/{}/{}/{}",
-        &state.settings.base_url,
-        module_address_with_version.namespace,
-        module_address_with_version.name,
-        module_address_with_version.system,
-        module_address_with_version.version
+        &settings.base_url, namespace, name, system, version
     );
 
-    let response = HttpResponse::NoContent()
-        .insert_header(("X-Terraform-Get", download_link))
-        .finish();
-
-    response
+    Response::builder()
+        .status(StatusCode::NO_CONTENT)
+        .header("X-Terraform-Get", download_link)
+        .finish()
 }
 
-#[get("/{namespace}/{name}/{system}/download")]
+#[handler]
 pub async fn download_latest_module_version(
-    _req: HttpRequest,
-    state: web::Data<AppState>,
-    module_address: web::Path<ModuleAddressRequest>,
-) -> HttpResponse {
+    settings: web::Data<&Settings>,
+    web::Path(ModuleAddressRequest {
+        namespace,
+        name,
+        system,
+    }): web::Path<ModuleAddressRequest>,
+) -> impl IntoResponse {
     // should return a 302 to the download URL of the latest version available
-    todo!()
+    ()
 }
