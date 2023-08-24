@@ -1,18 +1,6 @@
-use poem::{get, listener::TcpListener, middleware::AddData, EndpointExt, Route, Server};
-use terraform_registry_server::handlers::{
-    download_module_version, healthz, module_versions, service_discovery,
-};
+use poem::{listener::TcpListener, Server};
 
-use terraform_registry_server::configuration;
-
-fn module_routes() -> Route {
-    Route::new()
-        .at("/:namespace/:name/:system/versions", get(module_versions))
-        .at(
-            "/:namespace/:name/:system/:version/download",
-            get(download_module_version),
-        )
-}
+use terraform_registry_server::{build_app, configuration};
 
 #[tokio::main]
 async fn main() -> Result<(), std::io::Error> {
@@ -26,11 +14,7 @@ async fn main() -> Result<(), std::io::Error> {
         &settings.port
     );
 
-    let app = Route::new()
-        .at("/healthz", get(healthz))
-        .at("/.well-known/terraform.json", get(service_discovery))
-        .nest("/v1/modules", module_routes())
-        .with(AddData::new(settings.clone()));
+    let app = build_app(&settings);
 
     Server::new(TcpListener::bind((settings.host, settings.port)))
         .run(app)
