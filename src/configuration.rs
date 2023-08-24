@@ -1,5 +1,7 @@
 use serde::Deserialize;
+use std::path::Path;
 use std::path::PathBuf;
+use anyhow::Result;
 
 #[derive(Deserialize, Clone)]
 pub struct Settings {
@@ -10,16 +12,19 @@ pub struct Settings {
 }
 
 impl Default for Settings {
-    fn default() -> Self {
+    fn default() -> Settings {
+      Settings::from_path(Path::new("configuration.yaml"))
+    }
+}
+
+impl Settings {
+  fn from_path(path: &Path) -> Result<Settings> {
         let settings = config::Config::builder()
-            .add_source(config::File::new(
-                "configuration.yaml",
-                config::FileFormat::Yaml,
-            ))
+            .add_source(path.into())
             .build()
             .expect("failed to build configuration");
         settings
             .try_deserialize::<Settings>()
             .expect("failed to deserialize configuration")
-    }
+}
 }
