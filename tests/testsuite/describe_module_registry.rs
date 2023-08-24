@@ -55,6 +55,31 @@ mod versions {
     }
 
     #[tokio::test]
+    async fn it_returns_an_empty_list_with_no_versions() {
+        let client = get_client();
+        let resp = client
+            .get("/v1/modules/namespace-d/module-x/system-2/versions")
+            .send()
+            .await;
+
+        resp.assert_status_is_ok();
+
+        let expected_json = serde_json::json!(
+            {
+                "modules": [
+                    {
+                        "versions": []
+                    }
+                ]
+            }
+        );
+
+        let actual_json = resp.json().await;
+
+        helpers::assert_json_eq(expected_json, actual_json);
+    }
+
+    #[tokio::test]
     async fn it_returns_x_terraform_get_header() {
         let client = get_client();
         let resp = client
