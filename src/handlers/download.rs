@@ -1,3 +1,4 @@
+#![allow(unused_variables)]
 use poem::{handler, web, IntoResponse};
 
 use crate::{configuration::Settings, handlers::ModuleAddressWithVersionRequest};

@@ -3,9 +3,7 @@ use serde_json::Value;
 
 #[handler]
 pub async fn service_discovery() -> Json<Value> {
-    Json(serde_json::json!(
-        {
-            "modules.v1": "/terraform/modules/v1"
-        }
-    ))
+    Json(serde_json::json!({
+        "modules.v1": "/terraform/modules/v1"
+    }))
 }

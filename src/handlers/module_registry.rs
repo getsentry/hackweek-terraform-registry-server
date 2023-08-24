@@ -1,8 +1,9 @@
+#![allow(unused_variables)]
 use poem::{
     handler,
     http::StatusCode,
-    web::{self, headers::ContentType},
-    IntoResponse, Response, Result,
+    web::{self},
+    IntoResponse, Response,
 };
 use serde::{Deserialize, Serialize};
 
@@ -126,7 +127,7 @@ pub async fn download_module_version(
     }
 
     let download_link = format!(
-        "{}/download/{}/{}/{}/{}",
+        "{}/download/{}/{}/{}/{}/?archive=tar.gz",
         &settings.base_url, namespace, name, system, version
     );
 
@@ -146,5 +147,5 @@ pub async fn download_latest_module_version(
     }): web::Path<ModuleAddressRequest>,
 ) -> impl IntoResponse {
     // should return a 302 to the download URL of the latest version available
-    ()
+    todo!()
 }
