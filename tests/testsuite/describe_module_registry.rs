@@ -37,12 +37,12 @@ mod versions {
                 "modules": [
                     {
                         "versions": [
-                            {"version": "2.1.21.tar.xz"},
-                            {"version": "4.1.11.tar.xz"},
-                            {"version": "2.0.11.tar.xz"},
-                            {"version": "2.0.21.tar.xz"},
-                            {"version": "2.0.12.tar.xz"},
-                            {"version": "2.0.22.tar.xz"},
+                            {"version": "2.1.21"},
+                            {"version": "4.1.11"},
+                            {"version": "2.0.11"},
+                            {"version": "2.0.21"},
+                            {"version": "2.0.12"},
+                            {"version": "2.0.22"},
                         ]
                     }
                 ]
@@ -52,6 +52,41 @@ mod versions {
         let actual_json = resp.json().await;
 
         helpers::assert_json_eq(expected_json, actual_json);
+    }
+
+    #[tokio::test]
+    async fn it_returns_x_terraform_get_header() {
+        let client = get_client();
+        let resp = client
+            .get("/v1/modules/namespace-c/module-x/system-3/1.0.25/download")
+            .send()
+            .await;
+
+        resp.assert_status(StatusCode::NO_CONTENT);
+        resp.assert_header_exist("x-terraform-get");
+    }
+
+    #[tokio::test]
+    async fn it_returns_valid_download_link_in_x_terraform_get_header() {
+        use terraform_registry_server::configuration::Settings;
+        let settings = Settings::default();
+
+        let client = get_client();
+        let resp = client
+            .get("/v1/modules/namespace-c/module-x/system-3/1.0.25/download")
+            .send()
+            .await;
+
+        resp.assert_status(StatusCode::NO_CONTENT);
+        resp.assert_header_exist("x-terraform-get");
+
+        resp.assert_header(
+            "x-terraform-get",
+            format!(
+                "{}/download/namespace-c/module-x/system-3/1.0.25.tar.xz",
+                settings.base_url,
+            ),
+        )
     }
 }
 

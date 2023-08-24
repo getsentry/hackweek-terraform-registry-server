@@ -1,9 +1,10 @@
 #![allow(unused_variables)]
+use anyhow::Result;
 use poem::{
     handler,
     http::StatusCode,
     web::{self},
-    IntoResponse, Response, Result,
+    IntoResponse, Response,
 };
 use serde::{Deserialize, Serialize};
 
@@ -83,9 +84,9 @@ pub async fn module_versions(
         let version_string = path?
             .file_name()
             .into_string()
-            .unwrap()
+            .expect("failed to convert file name to string")
             .strip_suffix(".tar.xz")
-            .expect("unexpected archive file extension")
+            .expect("unexpected file extension")
             .to_string();
 
         let version = Version {
@@ -126,7 +127,7 @@ pub async fn download_module_version(
         .join(&namespace)
         .join(&name)
         .join(&system)
-        .join(&version);
+        .join(version.clone() + ".tar.xz"); //TODO: there has to be a cleaner way to do this...
 
     if !path.exists() {
         return Ok(Response::builder().status(StatusCode::NOT_FOUND).finish());
@@ -153,5 +154,5 @@ pub async fn download_latest_module_version(
     }): web::Path<ModuleAddressRequest>,
 ) -> Result<impl IntoResponse> {
     // should return a 302 to the download URL of the latest version available
-    todo!()
+    Ok(())
 }
