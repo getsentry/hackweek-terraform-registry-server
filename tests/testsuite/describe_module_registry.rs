@@ -90,4 +90,34 @@ mod versions {
     }
 }
 
-mod downloads {}
+mod downloads {
+    use crate::helpers::get_client;
+
+    #[tokio::test]
+    async fn it_sets_valid_content_type_header() {
+        let client = get_client();
+        let resp = client
+            .get("/download/namespace-c/module-x/system-3/1.0.25.tar.xz")
+            .send()
+            .await;
+
+        resp.assert_status_is_ok();
+
+        let content_type = resp.0.content_type();
+        pretty_assertions::assert_eq!(Some("application/x-xz"), content_type);
+    }
+
+    // #[tokio::test]
+    // async fn it_sets_valid_content_type_header() {
+    //     let client = get_client();
+    //     let resp = client
+    //         .get("/download/namespace-c/module-x/system-3/1.0.25.tar.xz")
+    //         .send()
+    //         .await;
+
+    //     resp.assert_status_is_ok();
+
+    //     let content_type = resp.0.content_type();
+    //     pretty_assertions::assert_eq!(Some("application/x-xz"), content_type);
+    // }
+}

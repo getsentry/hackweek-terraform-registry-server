@@ -1,5 +1,5 @@
 #![allow(unused_variables)]
-use anyhow::Result;
+use anyhow::{anyhow, Result};
 use poem::{
     handler,
     http::StatusCode,
@@ -78,20 +78,10 @@ pub async fn module_versions(
     }
 
     // {root_module_dir}/{namespace}/{name}/{system}/1.0.0
-    // TODO: remove all the unwraps and handle no versions gracefully
     let mut versions: Vec<Version> = vec![];
-    for path in path.read_dir()? {
-        let version_string = path?
-            .file_name()
-            .into_string()
-            .expect("failed to convert file name to string")
-            .strip_suffix(".tar.xz")
-            .expect("unexpected file extension")
-            .to_string();
-
-        let version = Version {
-            version: version_string,
-        };
+    for entry in path.read_dir()? {
+        let entry = entry?;
+        let version = extract_version(entry)?;
         versions.push(version);
     }
 
@@ -101,6 +91,19 @@ pub async fn module_versions(
     };
 
     Ok(web::Json(module_version_listing).into_response())
+}
+
+fn extract_version(entry: std::fs::DirEntry) -> Result<Version> {
+    let version_os_str = entry.file_name();
+    if let Some(version_str) = &version_os_str.to_str() {
+        if let Some(version) = version_str.strip_suffix(".tar.xz") {
+            return Ok(Version {
+                version: version.to_string(),
+            });
+        }
+    }
+
+    Err(anyhow!("failed to extract version"))
 }
 
 #[derive(Deserialize, Serialize, Debug)]
