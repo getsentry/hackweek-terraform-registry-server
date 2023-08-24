@@ -154,5 +154,7 @@ pub async fn download_latest_module_version(
     }): web::Path<ModuleAddressRequest>,
 ) -> Result<impl IntoResponse> {
     // should return a 302 to the download URL of the latest version available
-    Ok(())
+    Ok(Response::builder()
+        .status(StatusCode::NOT_IMPLEMENTED)
+        .finish())
 }
