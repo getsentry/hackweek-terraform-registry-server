@@ -3,11 +3,13 @@ use poem::http::StatusCode;
 use crate::helpers::{assert_handler_returns_json, get_client};
 
 mod versions {
+    use crate::helpers;
+
     use super::*;
 
     #[tokio::test]
     async fn it_returns_json() {
-        assert_handler_returns_json("/v1/modules/sentry/saas/project/versions").await;
+        assert_handler_returns_json("/v1/modules/namespace-a/module-x/system-2/versions").await;
     }
 
     #[tokio::test]
@@ -24,7 +26,7 @@ mod versions {
     async fn it_returns_available_versions() {
         let client = get_client();
         let resp = client
-            .get("/v1/modules/sentry/saas/project/versions")
+            .get("/v1/modules/namespace-a/module-x/system-2/versions")
             .send()
             .await;
 
@@ -35,15 +37,22 @@ mod versions {
                 "modules": [
                     {
                         "versions": [
-                            {"version": "1.0.0"},
-                            {"version": "2.1.0"},
-                            {"version": "3.2.1"},
+                            {"version": "2.1.21.tar.xz"},
+                            {"version": "4.1.11.tar.xz"},
+                            {"version": "2.0.11.tar.xz"},
+                            {"version": "2.0.21.tar.xz"},
+                            {"version": "2.0.12.tar.xz"},
+                            {"version": "2.0.22.tar.xz"},
                         ]
                     }
                 ]
             }
         );
 
-        resp.assert_json(expected_json).await;
+        let actual_json = resp.json().await;
+
+        helpers::assert_json_eq(expected_json, actual_json);
     }
 }
+
+mod downloads {}

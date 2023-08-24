@@ -3,7 +3,7 @@ use poem::{
     handler,
     http::StatusCode,
     web::{self},
-    IntoResponse, Response,
+    IntoResponse, Response, Result,
 };
 use serde::{Deserialize, Serialize};
 
@@ -65,7 +65,7 @@ pub async fn module_versions(
         name,
         system,
     }): web::Path<ModuleAddressRequest>,
-) -> impl IntoResponse {
+) -> Result<impl IntoResponse> {
     let path = Path::new(&settings.root_module_dir)
         .join(&namespace)
         .join(&name)
@@ -73,19 +73,25 @@ pub async fn module_versions(
 
     // check if directory exists
     if !path.exists() {
-        return Response::builder().status(StatusCode::NOT_FOUND).finish();
+        return Ok(Response::builder().status(StatusCode::NOT_FOUND).finish());
     }
 
     // {root_module_dir}/{namespace}/{name}/{system}/1.0.0
     // TODO: remove all the unwraps and handle no versions gracefully
     let mut versions: Vec<Version> = vec![];
-    for path in path.read_dir().expect("failed to read module directory") {
-        if path.is_ok() {
-            let version = Version {
-                version: path.unwrap().file_name().into_string().unwrap(),
-            };
-            versions.push(version);
-        }
+    for path in path.read_dir()? {
+        let version_string = path?
+            .file_name()
+            .into_string()
+            .unwrap()
+            .strip_suffix(".tar.xz")
+            .expect("unexpected archive file extension")
+            .to_string();
+
+        let version = Version {
+            version: version_string,
+        };
+        versions.push(version);
     }
 
     let module_versions: Vec<Module> = vec![Module { versions }];
@@ -93,7 +99,7 @@ pub async fn module_versions(
         modules: module_versions,
     };
 
-    web::Json(module_version_listing).into_response()
+    Ok(web::Json(module_version_listing).into_response())
 }
 
 #[derive(Deserialize, Serialize, Debug)]
@@ -115,7 +121,7 @@ pub async fn download_module_version(
         system,
         version,
     }): web::Path<ModuleAddressWithVersionRequest>,
-) -> impl IntoResponse {
+) -> Result<impl IntoResponse> {
     let path = Path::new(&settings.root_module_dir)
         .join(&namespace)
         .join(&name)
@@ -123,18 +129,18 @@ pub async fn download_module_version(
         .join(&version);
 
     if !path.exists() {
-        return Response::builder().status(StatusCode::NOT_FOUND).finish();
+        return Ok(Response::builder().status(StatusCode::NOT_FOUND).finish());
     }
 
     let download_link = format!(
-        "{}/download/{}/{}/{}/{}/?archive=tar.gz",
+        "{}/download/{}/{}/{}/{}.tar.xz",
         &settings.base_url, namespace, name, system, version
     );
 
-    Response::builder()
+    Ok(Response::builder()
         .status(StatusCode::NO_CONTENT)
         .header("X-Terraform-Get", download_link)
-        .finish()
+        .finish())
 }
 
 #[handler]
@@ -145,7 +151,7 @@ pub async fn download_latest_module_version(
         name,
         system,
     }): web::Path<ModuleAddressRequest>,
-) -> impl IntoResponse {
+) -> Result<impl IntoResponse> {
     // should return a 302 to the download URL of the latest version available
     todo!()
 }
