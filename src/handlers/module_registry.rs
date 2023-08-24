@@ -66,34 +66,34 @@ pub async fn module_versions(
         system,
     }): web::Path<ModuleAddressRequest>,
 ) -> impl IntoResponse {
-    // let path = Path::new(&settings.root_module_dir)
-    //     .join(&namespace)
-    //     .join(&name)
-    //     .join(&system);
+    let path = Path::new(&settings.root_module_dir)
+        .join(&namespace)
+        .join(&name)
+        .join(&system);
 
-    // // check if directory exists
-    // if !path.exists() {
-    //     return Response::builder().status(StatusCode::NOT_FOUND).finish();
-    // }
+    // check if directory exists
+    if !path.exists() {
+        return Response::builder().status(StatusCode::NOT_FOUND).finish();
+    }
 
-    // // {root_module_dir}/{namespace}/{name}/{system}/1.0.0
-    // // TODO: remove all the unwraps and handle no versions gracefully
-    // let mut versions: Vec<Version> = vec![];
-    // for path in path.read_dir().expect("failed to read module directory") {
-    //     if path.is_ok() {
-    //         let version = Version {
-    //             version: path.unwrap().file_name().into_string().unwrap(),
-    //         };
-    //         versions.push(version);
-    //     }
-    // }
+    // {root_module_dir}/{namespace}/{name}/{system}/1.0.0
+    // TODO: remove all the unwraps and handle no versions gracefully
+    let mut versions: Vec<Version> = vec![];
+    for path in path.read_dir().expect("failed to read module directory") {
+        if path.is_ok() {
+            let version = Version {
+                version: path.unwrap().file_name().into_string().unwrap(),
+            };
+            versions.push(version);
+        }
+    }
 
-    // let module_versions: Vec<Module> = vec![Module { versions }];
-    // let module_version_listing = ModuleVersionListResponse {
-    //     modules: module_versions,
-    // };
+    let module_versions: Vec<Module> = vec![Module { versions }];
+    let module_version_listing = ModuleVersionListResponse {
+        modules: module_versions,
+    };
 
-    // web::Json(module_version_listing).into_response()
+    web::Json(module_version_listing).into_response()
 }
 
 #[derive(Deserialize, Serialize, Debug)]

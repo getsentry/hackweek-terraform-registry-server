@@ -1,20 +1,13 @@
-use terraform_registry_server::{build_app, configuration::Settings};
+use crate::helpers::{assert_handler_returns_json, get_client};
 
 #[tokio::test]
 async fn it_returns_json() {
-    let client = get_client();
-
-    let resp = client.get("/.well-known/terraform.json").send().await;
-
-    resp.assert_status_is_ok();
-    resp.assert_content_type("application/json; charset=utf-8");
-    let _ = resp.json().await;
+    assert_handler_returns_json("/.well-known/terraform.json").await;
 }
 
 #[tokio::test]
 async fn it_answers_terraform_service_discovery_request() {
-    let app = build_app(&Settings::default());
-    let client = TestClient::new(app);
+    let client = get_client();
 
     let resp = client.get("/.well-known/terraform.json").send().await;
 
