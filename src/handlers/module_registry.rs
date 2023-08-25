@@ -1,5 +1,5 @@
 #![allow(unused_variables)]
-use anyhow::{anyhow, Result};
+use anyhow::Result;
 use poem::{
     handler,
     http::StatusCode,
@@ -8,7 +8,7 @@ use poem::{
 };
 use serde::{Deserialize, Serialize};
 
-use std::path::Path;
+use std::{ffi::OsString, path::Path};
 
 use crate::configuration::Settings;
 
@@ -93,17 +93,17 @@ pub async fn module_versions(
     Ok(web::Json(module_version_listing).into_response())
 }
 
-fn extract_version(entry: std::fs::DirEntry) -> Result<Version> {
-    let version_os_str = entry.file_name();
-    if let Some(version_str) = &version_os_str.to_str() {
-        if let Some(version) = version_str.strip_suffix(".tar.xz") {
-            return Ok(Version {
-                version: version.to_string(),
-            });
-        }
-    }
+fn extract_version(dir_entry: std::fs::DirEntry) -> Result<Version> {
+    let filename: OsString = dir_entry.file_name();
+    let basename: &str = filename
+        .to_str()
+        .ok_or(anyhow::anyhow!("non-utf8 in filename"))?;
+    let version: String = basename
+        .strip_suffix(".tar.xz")
+        .ok_or(anyhow::anyhow!("unexpected suffix {}", basename))?
+        .to_string();
 
-    Err(anyhow!("failed to extract version"))
+    Ok(Version { version })
 }
 
 #[derive(Deserialize, Serialize, Debug)]

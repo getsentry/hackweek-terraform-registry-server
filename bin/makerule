@@ -1,0 +1,29 @@
+#!/bin/bash
+# a simple wrapper for make rules, to make them behave better
+#  1. reliable registration of success/failure
+#  2. clear, readable output
+set -eEuo pipefail
+
+show() {(
+  set -x
+  "$@"
+)}
+
+# a blue "prompt" for xtrace output
+export PS4='+ \033[1;34m$\033[m '
+
+touch="$1"
+shift 1
+
+if show "$@"; then
+  status=$?
+  show touch "$touch"
+  echo -n $'\033[32m'"SUCCESS"
+else
+  status=$?
+  untouch "$touch"
+  echo -n $'\033[31m'"FAIL($status)"
+fi
+
+echo $'\033[m:' "$@"
+exit "$status"

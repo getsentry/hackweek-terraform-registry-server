@@ -1,2 +1,5 @@
 brew "mkcert"
 brew "nss"
+brew "bash"
+brew "coreutils"
+brew "gnu-tar"

@@ -2,3 +2,6 @@
 .env
 *.pem
 Brewfile.lock.json
+
+# makefile helper sentinel file
+**/*.done

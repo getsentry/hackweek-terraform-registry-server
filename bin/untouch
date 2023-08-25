@@ -1,0 +1,3 @@
+#!/bin/sh
+# opposite of "touch"; set an extremely old mtime on a file
+touch -t 197001010000 "$@"
