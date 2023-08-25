@@ -23,7 +23,8 @@ for namespace in a b c; do
         $(((i + 7) % 3 + 1)) \
         $(((i + 5) % 2 + 1)) \
     ; do
-      system="system_$system"
+      # TIL: `-` and `_` are no longer ASCII characters
+      system="system$system"
       echo "    $system/"
       i=$(((i + 51) % 31 + 1))
       for version in \

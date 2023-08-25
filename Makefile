@@ -14,5 +14,5 @@ localhost+1.pem:
 	mkcert -install
 	@makerule $@ mkcert localhost 127.0.0.1
 
-serve:
+serve: devenv
 	cargo run
