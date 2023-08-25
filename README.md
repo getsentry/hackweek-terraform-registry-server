@@ -2,7 +2,7 @@
 
 ## Features
 
-- Implements the (Module Registry Protocol)[https://developer.hashicorp.com/terraform/internals/module-registry-protocol] (`modules.v1`)
+- Implements the [Module Registry Protocol](https://developer.hashicorp.com/terraform/internals/module-registry-protocol) (`modules.v1`)
 - Modules are stored on the filesystem
 
 ## Contributing
