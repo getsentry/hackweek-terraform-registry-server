@@ -1,6 +1,6 @@
 use poem::{
     get,
-    middleware::{AddData, AddDataEndpoint},
+    middleware::{AddData, AddDataEndpoint, Tracing},
     EndpointExt, Route,
 };
 
@@ -13,20 +13,24 @@ use crate::handlers::{
 
 fn module_routes() -> Route {
     Route::new()
-        .at("/:namespace/:name/:system/versions", get(module_versions))
+        .at(":namespace/:name/:system/versions", get(module_versions))
         .at(
-            "/:namespace/:name/:system/:version/download",
+            ":namespace/:name/:system/:version/download",
             get(download_module_version),
         )
 }
 
 pub fn build_app(
     settings: &configuration::Settings,
-) -> AddDataEndpoint<Route, configuration::Settings> {
+) -> poem::middleware::AddDataEndpoint<
+    poem::middleware::TracingEndpoint<poem::Route>,
+    configuration::Settings,
+> {
     Route::new()
         .at("/healthz", get(healthz))
         .at("/.well-known/terraform.json", get(service_discovery))
         .nest("/v1/modules", module_routes())
         .at("/download/:namespace/:name/:system/:version", get(download))
+        .with(Tracing)
         .with(AddData::new(settings.clone()))
 }

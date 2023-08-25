@@ -4,7 +4,7 @@ set -euxo pipefail
 set -x
 
 : clean slate
-rm -rv ./namespace-* || true  # no such file
+rm -rv ./namespace_* || true  # no such file
 
 i=0  # a small pseudo-pseudo-random number
 for namespace in a b c; do
@@ -19,7 +19,7 @@ for namespace in a b c; do
         "$(((i % 5) + 1)).0.$((i + 1))" \
         "$(((i % 4) + 1)).1.$((i))" \
       ; do
-        moduledir="namespace-$namespace/module-$module/system-$system/$version"
+        moduledir="namespace_$namespace/module_$module/system_$system/$version"
         mkdir -p "$moduledir"
         cat > "$moduledir/$module.tf" <<EOF
 output "namespace" { value = "$namespace" }
