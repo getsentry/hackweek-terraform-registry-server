@@ -42,16 +42,16 @@ output "system" { value = "$system" }
 output "version" { value = "$version" }
 EOF
         (
-          cd "$(dirname "$moduledir")"
+          cd "$moduledir"
           tar \
             --owner=0 \
             --group=0 \
             --mtime=0 \
             "${verbose[@]}" \
-            -cf "$version.tar" \
-            "$version" \
+            -cf "../$version.tar" \
+            . \
           ;
-          xz "$version.tar"
+          xz "../$version.tar"
         )
         rm -r "$moduledir"
       done

@@ -1,0 +1,22 @@
+#!/bin/bash
+set -euo pipefail
+HERE="$(cd "$(dirname "$0")"; pwd)"
+
+set -x
+cd "$HERE"
+: clean up from any prior runs
+rm -rf .terraform terraform.tfstate terraform.tfstate.backup
+TF_LOG=debug terraform init
+terraform apply --auto-approve
+
+set +x
+terraform output --json |
+  jq \
+    --argfile expected ./expected.json \
+    ' .["a-x-2"].value
+    | select(. != $expected)
+    | error("assertion failed, sadface:\n\t\(.)\n\t!=\n\t\($expected)")
+    ' \
+  \
+;
+echo PASS: integration tests

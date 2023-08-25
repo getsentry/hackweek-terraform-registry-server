@@ -1,3 +1,3 @@
-
+.PHONY: test
 test:
-	terraform init
+	./test

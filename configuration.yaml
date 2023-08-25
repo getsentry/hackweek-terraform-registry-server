@@ -1,4 +1,4 @@
 root_module_dir: "./tests/mock_modules/"
 host: 127.0.0.1
-base_url: http://localhost:8555
+base_url: https://127.0.0.1:8443
 port: 8555

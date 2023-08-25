@@ -1,7 +1,11 @@
 /target
-.env
-*.pem
 Brewfile.lock.json
 
 # makefile helper sentinel file
 **/*.done
+
+# dirty hacks
+**/*.tmp
+**/*.bak
+**/trash/
+**/*.private

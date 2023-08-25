@@ -2,17 +2,22 @@
 all: devenv
 	@echo $$'\033[32mSuccess\033[m: Let'\''s go!'
 
+.PHONY: devenv
+devenv: brew cert
+	make -C ./tests/mock_modules
+
+.PHONY: brew
+brew: .Brewfile.done
 .Brewfile.done: Brewfile
 	@makerule $@ brew bundle
 
-.PHONY: devenv
-devenv: .Brewfile.done
-	make -C ./tests/mock_modules
-
-
-localhost+1.pem:
+.PHONY: cert
+cert: tls/pem/127.0.0.1.pem
+tls/pem/127.0.0.1.pem:
 	mkcert -install
-	@makerule $@ mkcert localhost 127.0.0.1
+	# this is the layout expecgted by haproxy:
+	mkcert -key-file tls/127.0.0.1.pem.key -cert-file tls/127.0.0.1.pem  127.0.0.1
 
+.PHONY: serve
 serve: devenv
-	cargo run
+	./bin/serve

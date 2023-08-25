@@ -23,11 +23,11 @@ async fn main() -> Result<(), std::io::Error> {
 
     let app = build_app(&settings);
 
-    let key = fs::read("./localhost+1-key.pem").await?;
-    let cert = fs::read("./localhost+1.pem").await?;
+    //let key = fs::read("./localhost+1-key.pem").await?;
+    //let cert = fs::read("./localhost+1.pem").await?;
 
-    let listener = TcpListener::bind((settings.host, settings.port))
-        .rustls(RustlsConfig::new().fallback(RustlsCertificate::new().key(key).cert(cert)));
+    let listener = TcpListener::bind((settings.host, settings.port));
+    //.rustls(RustlsConfig::new().fallback(RustlsCertificate::new().key(key).cert(cert)));
 
     Server::new(listener).run(app).await
 }

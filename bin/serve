@@ -1,0 +1,6 @@
+#!/bin/sh
+set -ex
+cd "$TOP"  # set by .envrc
+haproxy -d -f ./tls/haproxy.cfg &
+cargo run &
+wait
