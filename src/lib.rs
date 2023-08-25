@@ -1,6 +1,6 @@
 use poem::{
     get,
-    middleware::{AddData, AddDataEndpoint, Tracing},
+    middleware::{AddData, Tracing},
     EndpointExt, Route,
 };
 

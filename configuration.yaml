@@ -2,3 +2,9 @@ root_module_dir: "./tests/mock_modules/"
 host: 127.0.0.1
 base_url: http://localhost:8555
 port: 8555
+
+tls:
+  enabled: true
+  cert: ./localhost+1.pem
+  key: ./localhost+1-key.pem
+

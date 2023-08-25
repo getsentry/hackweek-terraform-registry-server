@@ -1,3 +1,3 @@
 
 test:
-	terraform init
+	TF_LOG=debug terraform init

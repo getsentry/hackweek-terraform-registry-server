@@ -7,6 +7,14 @@ pub struct Settings {
     pub host: String,
     pub port: u16,
     pub base_url: String,
+    pub tls: TlsSettings,
+}
+
+#[derive(Deserialize, Clone)]
+pub struct TlsSettings {
+    pub enabled: bool,
+    pub cert: PathBuf,
+    pub key: PathBuf,
 }
 
 impl Default for Settings {
