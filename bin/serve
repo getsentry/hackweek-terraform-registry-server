@@ -1,5 +1,11 @@
 #!/bin/sh
-set -ex
+set -e
+
+# ensure that subprocesses will die along with this shell
+onexit() { kill -- -"$$"; }
+trap onexit EXIT
+
+set -x
 cd "$TOP"  # set by .envrc
 haproxy -d -f ./tls/haproxy.cfg &
 cargo run &
